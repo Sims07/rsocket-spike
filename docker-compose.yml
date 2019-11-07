@@ -1,0 +1,67 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+
+version: '3.7'
+
+# Define services
+services:
+  # App backend service
+  rsocket-server:
+    # Configuration for building the docker image for the backend service
+    build:
+      context: rsocket-server # Use an image built from the specified dockerfile in the `polling-app-server` directory.
+      dockerfile: Dockerfile
+    restart: "no"
+    ports:
+      - "8080:8080"
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
+  rsocket-client:
+    # Configuration for building the docker image for the backend service
+    build:
+      context: rsocket-client # Use an image built from the specified dockerfile in the `polling-app-server` directory.
+      dockerfile: Dockerfile
+    depends_on:
+      - rsocket-server
+      - spring-mvc-server
+    ports:
+      - "8081:8081" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    restart: always
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
+  spring-mvc-server:
+    # Configuration for building the docker image for the backend service
+    build:
+      context: spring-mvc-server # Use an image built from the specified dockerfile in the `polling-app-server` directory.
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - rsocket-server
+    restart: always
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
+  prometheus:
+    build:
+      context: prometheus
+      dockerfile: Dockerfile
+    ports:
+      - 9090:9090
+    depends_on:
+      - rsocket-server
+    networks:
+      - backend
+  graphana:
+    image: 'grafana/grafana'
+    ports:
+      - '3000:3000'
+    networks:
+      - backend
+  zipkin:
+    image: 'openzipkin/zipkin'
+    ports:
+      - '9411:9411'
+    networks:
+      - backend
+# Networks to be created to facilitate communication between containers
+networks:
+  backend:
