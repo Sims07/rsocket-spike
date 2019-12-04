@@ -1,4 +1,4 @@
-## RSocket Spike
+## RSocket Spike [![Build Status](https://travis-ci.org/Sims07/rsocket-spike.svg?branch=master)](https://travis-ci.org/Sims07/rsocket-spike)
 
 
 ### Performance Tests
